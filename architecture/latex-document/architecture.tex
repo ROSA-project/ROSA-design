@@ -9,6 +9,8 @@
 \tikzstyle{rootClass}=[rectangle,black,draw, fill=orange!30, text width=5 cm]
 \tikzstyle{essentialClass}=[rectangle,black,draw, fill=green!30, text width=5 cm]
 \tikzstyle{exampleClass}=[rectangle,black,draw, fill=red!30, text width=5 cm]
+\tikzstyle{narrowBox}=[text width=5 cm]
+\tikzstyle{wideBox}=[text width=13 cm]
 
 \tikzstyle{inheritedFrom}=[->,black, line width=2]
 \tikzstyle{instantiatedIn}=[-,black, line width=2] 
@@ -16,10 +18,10 @@
 %children of A cannot be known to B now.
 
 \newcommand{\nodeTextWidthRatio}{0.95}
-\newcommand{\method}[1]{\textbf{\texttt{#1}}}
-\newcommand{\desc}[1]{\ \ \ #1}
-\newcommand{\className}[1]{\large \textbf{#1}}
-\newcommand{\data}[1]{\textbf{\texttt{#1}}}
+\newcommand{\method}[1]{\textbf{\texttt{\detokenize{#1}}}}
+\newcommand{\desc}[1]{\ \ \ \texttt{\detokenize{#1}}}
+\newcommand{\className}[1]{\large \textbf{\detokenize{#1}}}
+\newcommand{\data}[1]{\textbf{\texttt{\detokenize{#1}}}}
 \newcommand{\code}[1]{\verb+ #1 +}
 
 \def\showExampleClasses{1}
@@ -35,10 +37,10 @@
 %NOTE: you can't refer to exampleClass and essentialClass nodes
 % in definition of roots. Order of definition matters for that and
 %other type of nodes come later. 
-\node[rootClass, text width = 13 cm] (World) {
+\node[rootClass, wideBox] (World) {
 	\input{nodes/rootClasses/World}
 };
-\node[rootClass, text width = 13 cm ] (Object) [below=of World] {
+\node[rootClass, wideBox] (Object) [below=of World] {
 	\input{nodes/rootClasses/Object}
 };
 
@@ -50,7 +52,7 @@
 	\input{nodes/rootClasses/Position}
 };
 
-\node[rootClass ] (InIn) [left=of World] {
+\node[rootClass,wideBox ] (InIn) [left=of World] {
 	\input{nodes/rootClasses/IntersectionInstance}
 };
 
@@ -80,11 +82,15 @@
 	% 	\input{nodes/essentialClasses/DiscretizedShape2D}
 	% };
 
+	\node[essentialClass, wideBox ] (RigidPhysicalObject) [right=of Position] {
+		\input{nodes/essentialClasses/RigidPhysicalObject}
+	};
+
 	\node[essentialClass ] (Robot) [left=of Object] {
 		\input{nodes/essentialClasses/Robot}
 	};
 
-	\node[essentialClass ] (Sensor) [above left=of Robot] {
+	\node[essentialClass ] (Sensor) [left=of Robot, below=of InIn] {
 		\input{nodes/essentialClasses/Sensor}
 	};
 
@@ -131,6 +137,10 @@
 	% 	\input{nodes/exampleClasses/LidarSensor}
 	% };
 
+	\node[exampleClass ] (RigidPointBall) [below=of RigidPhysicalObject] {
+		\input{nodes/exampleClasses/RigidPointBall}
+	};
+
 	% \draw [inheritedFrom] (Disk) -- (Shape);
 	\draw [inheritedFrom] (Cylinder) -- (Shape);
 	\draw [inheritedFrom] (Cube) -- (Shape);
@@ -142,23 +152,24 @@
 
 \fi
 
-\node[inner sep=0pt, right of= InIn, xshift=-6cm, yshift=1cm] (neo)
-    {\includegraphics[width=.25\textwidth]{neo.jpg}};
+%%%%% the matrix annotation part :D
 
-\node[inner sep=0pt, right of= neo, xshift=-4.5cm] (architect)
-    {\includegraphics[width=.25\textwidth]{architect.jpg}};
+%\node[inner sep=0pt, right of= InIn, xshift=-6cm, yshift=1cm] (neo)
+%    {\includegraphics[width=.25\textwidth]{neo.jpg}};
 
-\node [rectangle,black,draw, below of=architect, yshift=-2cm, text width = 10cm] 
-    {\textbf{Neo} : Why am I here?\\
-	\textbf{The Architect} : Your life is the sum of a remainder of an unbalanced equation inherent to the programming of the matrix. You are the eventuality of an anomaly, which despite my sincerest efforts I have been unable to eliminate from what is otherwise a harmony of mathematical precision.};
+%\node[inner sep=0pt, right of= neo, xshift=-4.5cm] (architect)
+%    {\includegraphics[width=.25\textwidth]{architect.jpg}};
 
-\node[inner sep=0pt, right of= Map, xshift=5cm] (smith)
-    {\includegraphics[width=.4\textwidth]{smith.jpg}};
+%\node [rectangle,black,draw, below of=architect, yshift=-2cm, text width = 10cm] 
+%    {\textbf{Neo} : Why am I here?\\
+%	\textbf{The Architect} : Your life is the sum of a remainder of an unbalanced equation inherent to the programming of the matrix. You are the eventuality of an anomaly, which despite my sincerest efforts I have been unable to eliminate from what is otherwise a harmony of mathematical precision.};
 
-\node [rectangle,black,draw, below of=smith, yshift=-1.5cm, text width = 8cm] 
-    {\textbf{Smith to Neo}: Because Of You, I'm No Longer An Agent Of This System. Because Of You, I've Changed. I'm Unplugged. A New Man, So To Speak.};
+% \node[inner sep=0pt, right of= Map, xshift=5cm] (smith)
+%     {\includegraphics[width=.4\textwidth]{smith.jpg}};
 
-	
+% \node [rectangle,black,draw, below of=smith, yshift=-1.5cm, text width = 8cm] 
+%     {\textbf{Smith to Neo}: Because Of You, I'm No Longer An Agent Of This System. Because Of You, I've Changed. I'm Unplugged. A New Man, So To Speak.};
+
 
 \end{tikzpicture}
 

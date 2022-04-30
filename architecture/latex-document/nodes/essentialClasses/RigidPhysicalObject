@@ -1,0 +1,8 @@
+\begin{tabular}{p{\nodeTextWidthRatio\textwidth}} 
+\className{RigidPhysicalObject}
+
+\desc{The most general form of it, supporting bumps}
+\\ \hline
+\\ \hline
+\end{tabular} 
+

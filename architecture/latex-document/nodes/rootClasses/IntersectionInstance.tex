@@ -1,12 +1,41 @@
 \begin{tabular}{p{\nodeTextWidthRatio\textwidth}} 
-\className{InIn}
-
-\desc{IntersectionInstance}
+\className{IntersectionInstance}
 \\ \hline
+\data{object1}
 
+\data{object2}
+
+\data{__does_intersect = False}
+
+\data{__is_infinitesimal = False }
+
+\data{_intersection_points = [] }
 \\ \hline
-\method{intersect() -> dict}
+\method{intersect() -> None}
 
-\desc{evaluates the intersection. An algorithm with mathematical calculations.}
+\desc{the entry point for performing the intersection algorithm on its two
+objects. 
+No return value, the other methods do the job.
+The results are then taken by calling methods such as does_intersect,
+is_infinitesimal and so on.}
 
+\method{does_intersect() -> bool}
+
+\method{cylinder_cube()}
+
+\method{line_circle() -> list, float}
+
+\method{rectangle_lines() -> list}
+
+\method{rotation_matrix_2d()}
+
+\method{horizontal_line_segment_intersection()}
+
+\method{cube_cube()}
+
+\method{cylinder_cylinder()}
+
+\method{is_infinitesimal()}
+
+\method{get_intersection_point()}
 \end{tabular}
