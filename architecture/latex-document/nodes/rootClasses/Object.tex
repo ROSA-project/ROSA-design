@@ -1,0 +1,39 @@
+\begin{tabular}{p{\nodeTextWidthRatio\textwidth}} 
+\className{Object}
+\\ \hline
+\data{objectID}
+
+\desc{every object needs an ID to be tracable in map and in state}
+
+\data{shape: Shape}
+
+\desc{which could be empty if the object is an owner}
+
+\data{position: Position}
+
+\desc{position and orientation of an anchor point of the object}
+\\ \hline
+\method{evolve(delta-t, intersection-result: InIn) -> list[Object]: offspring-objects}
+
+\desc{changes the state (position, internal attributes, etc) of the object}
+
+\desc{trvial evolution: when the object never changes state}
+
+\desc{offsprings are the possibly non-physical objects required to accomplish something.}
+
+\method{visualize()}
+
+\desc{returns the information required for visualization}
+
+\method{bounding-box() -> Box}
+
+\desc{returns a box which contains the whole object. used to optimize intersection evaluation}
+
+\method{get-required-delta-t()}
+
+\desc{calculates the delta-t it requires to operate}
+
+\method{time-to-die() -> bool}
+
+\desc{tells the World if it wants to be eliminated. This might be where Agent Smith cheated the matrix!}
+\end{tabular} 

@@ -1,0 +1,165 @@
+\documentclass{standalone}
+%\usepackage{fullpage}
+\usepackage{tikz}
+\usepackage{graphicx}
+
+\usetikzlibrary{positioning}
+%\usetikzlibrary{shapes.multipart}
+
+\tikzstyle{rootClass}=[rectangle,black,draw, fill=orange!30, text width=5 cm]
+\tikzstyle{essentialClass}=[rectangle,black,draw, fill=green!30, text width=5 cm]
+\tikzstyle{exampleClass}=[rectangle,black,draw, fill=red!30, text width=5 cm]
+
+\tikzstyle{inheritedFrom}=[->,black, line width=2]
+\tikzstyle{instantiatedIn}=[-,black, line width=2] 
+%Note that A instantiatedIn B relationship reduces flexibility as the 
+%children of A cannot be known to B now.
+
+\newcommand{\nodeTextWidthRatio}{0.95}
+\newcommand{\method}[1]{\textbf{\texttt{#1}}}
+\newcommand{\desc}[1]{\ \ \ #1}
+\newcommand{\className}[1]{\large \textbf{#1}}
+\newcommand{\data}[1]{\textbf{\texttt{#1}}}
+\newcommand{\code}[1]{\verb+ #1 +}
+
+\def\showExampleClasses{1}
+\def\showEssentialClasses{1}
+%Note that you can't have showExampleClasses=1 with showEssentialClasses=0
+%as the former nodes refer to the latter and this will cause error.
+
+\begin{document}
+
+\begin{tikzpicture}
+
+
+%NOTE: you can't refer to exampleClass and essentialClass nodes
+% in definition of roots. Order of definition matters for that and
+%other type of nodes come later. 
+\node[rootClass, text width = 13 cm] (World) {
+	\input{nodes/rootClasses/World}
+};
+\node[rootClass, text width = 13 cm ] (Object) [below=of World] {
+	\input{nodes/rootClasses/Object}
+};
+
+\node[rootClass ] (Shape) [right=of Object] {
+	\input{nodes/rootClasses/Shape}
+};
+
+\node[rootClass ] (Position) [above=of Shape] {
+	\input{nodes/rootClasses/Position}
+};
+
+\node[rootClass ] (InIn) [left=of World] {
+	\input{nodes/rootClasses/IntersectionInstance}
+};
+
+% \node[rootClass ] (WorldState) [right=of World] {
+% 	\input{nodes/rootClasses/WorldState}
+% };
+
+\node[rootClass ] (Map) [right=of World] {
+	\input{nodes/rootClasses/Map}
+};
+
+\draw [instantiatedIn] (Object) -- (World);
+
+\if\showEssentialClasses1
+	%NOTE: you can't refer to exampleClass nodes in definition of 
+	%essentials or roots. Order of definition matters for that and
+	%exampleClasses come later. 
+	% \node[essentialClass ] (XMLmap) [below=of Map] {
+	% 	\input{nodes/essentialClasses/XMLmap}
+	% };
+
+	% \node[essentialClass ] (DiscretizedShape) [below=of Shape] {
+	% 	\input{nodes/essentialClasses/DiscretizedShape}
+	% };
+
+	% \node[essentialClass ] (DiscretizedShape2D) [below=of DiscretizedShape] {
+	% 	\input{nodes/essentialClasses/DiscretizedShape2D}
+	% };
+
+	\node[essentialClass ] (Robot) [left=of Object] {
+		\input{nodes/essentialClasses/Robot}
+	};
+
+	\node[essentialClass ] (Sensor) [above left=of Robot] {
+		\input{nodes/essentialClasses/Sensor}
+	};
+
+	\draw [inheritedFrom] (Robot) -- (Object);
+	\draw [inheritedFrom] (Sensor) -- (Object);
+	% \draw [inheritedFrom] (DiscretizedShape) -- (Shape);
+	% \draw [inheritedFrom] (DiscretizedShape2D) -- (DiscretizedShape);
+	% \draw [inheritedFrom] (XMLmap) -- (Map);
+\fi
+
+\if\showExampleClasses1
+	% \node[exampleClass ] (Disk) [below=of Shape, right=of DiscretizedShape] {
+	% 	\input{nodes/exampleClasses/Disk}
+	% };
+
+	\node[exampleClass ] (Cylinder) [below=of Shape] {
+		\input{nodes/exampleClasses/Cylinder}
+	};
+
+	\node[exampleClass ] (Cube) [right=of Cylinder] {
+		\input{nodes/exampleClasses/Cube}
+	};
+	% \node[exampleClass ] (Wheel) [below=of Object] {
+	% 	\input{nodes/exampleClasses/Wheel}
+	% };
+
+	% \node[exampleClass ] (DiningTable) [right=of Wheel] {
+	% 	\input{nodes/exampleClasses/DiningTable}
+	% };
+
+	\node[exampleClass ] (VaccumCleaner) [below=of Robot] {
+		\input{nodes/exampleClasses/VaccumCleaner}
+	};
+
+	\node[exampleClass ] (Box) [below=of Object] {
+		\input{nodes/exampleClasses/Box}
+	};
+
+	\node[exampleClass ] (BumperSensor) [below=of Sensor] {
+		\input{nodes/exampleClasses/BumperSensor}
+	};
+
+	% \node[exampleClass ] (LidarSensor) [left=of BumperSensor] {
+	% 	\input{nodes/exampleClasses/LidarSensor}
+	% };
+
+	% \draw [inheritedFrom] (Disk) -- (Shape);
+	\draw [inheritedFrom] (Cylinder) -- (Shape);
+	\draw [inheritedFrom] (Cube) -- (Shape);
+	% \draw [inheritedFrom] (DiningTable) -- (Object);
+	\draw [inheritedFrom] (Box) -- (Object);
+	\draw [inheritedFrom] (VaccumCleaner) -- (Robot);
+	\draw [inheritedFrom] (BumperSensor) -- (Sensor);
+	% \draw [inheritedFrom] (LidarSensor) -- (Sensor);
+
+\fi
+
+\node[inner sep=0pt, right of= InIn, xshift=-6cm, yshift=1cm] (neo)
+    {\includegraphics[width=.25\textwidth]{neo.jpg}};
+
+\node[inner sep=0pt, right of= neo, xshift=-4.5cm] (architect)
+    {\includegraphics[width=.25\textwidth]{architect.jpg}};
+
+\node [rectangle,black,draw, below of=architect, yshift=-2cm, text width = 10cm] 
+    {\textbf{Neo} : Why am I here?\\
+	\textbf{The Architect} : Your life is the sum of a remainder of an unbalanced equation inherent to the programming of the matrix. You are the eventuality of an anomaly, which despite my sincerest efforts I have been unable to eliminate from what is otherwise a harmony of mathematical precision.};
+
+\node[inner sep=0pt, right of= Map, xshift=5cm] (smith)
+    {\includegraphics[width=.4\textwidth]{smith.jpg}};
+
+\node [rectangle,black,draw, below of=smith, yshift=-1.5cm, text width = 8cm] 
+    {\textbf{Smith to Neo}: Because Of You, I'm No Longer An Agent Of This System. Because Of You, I've Changed. I'm Unplugged. A New Man, So To Speak.};
+
+	
+
+\end{tikzpicture}
+
+\end{document}
