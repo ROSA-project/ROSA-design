@@ -18,11 +18,12 @@
 %children of A cannot be known to B now.
 
 \newcommand{\nodeTextWidthRatio}{0.95}
-\newcommand{\method}[1]{\textbf{\texttt{\detokenize{#1}}}}
-\newcommand{\desc}[1]{\ \ \ \texttt{\detokenize{#1}}}
+\newcommand{\spaceafter}{\vspace{0mm}}
+\newcommand{\method}[1]{\spaceafter\textbf{\texttt{\detokenize{#1}}}\\}
+\newcommand{\desc}[1]{\ \ \ \texttt{\detokenize{#1}}\\}
 \newcommand{\className}[1]{\large \textbf{\detokenize{#1}}}
-\newcommand{\data}[1]{\textbf{\texttt{\detokenize{#1}}}}
-\newcommand{\code}[1]{\verb+ #1 +}
+\newcommand{\data}[1]{\spaceafter\textbf{\texttt{\detokenize{#1}}}\\}
+\newcommand{\code}[1]{\verb+ #1 +\\}
 
 \def\showExampleClasses{1}
 \def\showEssentialClasses{1}
@@ -44,7 +45,11 @@
 	\input{nodes/rootClasses/Object}
 };
 
-\node[rootClass ] (Shape) [right=of Object] {
+\node[rootClass, wideBox ] (Map) [right=of World] {
+	\input{nodes/rootClasses/Map}
+};
+
+\node[rootClass ] (Shape) [right=of Map] {
 	\input{nodes/rootClasses/Shape}
 };
 
@@ -60,11 +65,7 @@
 % 	\input{nodes/rootClasses/WorldState}
 % };
 
-\node[rootClass ] (Map) [right=of World] {
-	\input{nodes/rootClasses/Map}
-};
-
-\draw [instantiatedIn] (Object) -- (World);
+%\draw [instantiatedIn] (Object) -- (World);
 
 \if\showEssentialClasses1
 	%NOTE: you can't refer to exampleClass nodes in definition of 
@@ -82,7 +83,7 @@
 	% 	\input{nodes/essentialClasses/DiscretizedShape2D}
 	% };
 
-	\node[essentialClass, wideBox ] (RigidPhysicalObject) [right=of Position] {
+	\node[essentialClass, wideBox ] (RigidPhysicalObject) [right=of Object] {
 		\input{nodes/essentialClasses/RigidPhysicalObject}
 	};
 
@@ -96,6 +97,7 @@
 
 	\draw [inheritedFrom] (Robot) -- (Object);
 	\draw [inheritedFrom] (Sensor) -- (Object);
+	\draw [inheritedFrom] (RigidPhysicalObject) -- (Object);
 	% \draw [inheritedFrom] (DiscretizedShape) -- (Shape);
 	% \draw [inheritedFrom] (DiscretizedShape2D) -- (DiscretizedShape);
 	% \draw [inheritedFrom] (XMLmap) -- (Map);
@@ -137,7 +139,7 @@
 	% 	\input{nodes/exampleClasses/LidarSensor}
 	% };
 
-	\node[exampleClass ] (RigidPointBall) [below=of RigidPhysicalObject] {
+	\node[exampleClass, wideBox ] (RigidPointBall) [right=of RigidPhysicalObject] {
 		\input{nodes/exampleClasses/RigidPointBall}
 	};
 
@@ -149,6 +151,7 @@
 	\draw [inheritedFrom] (VaccumCleaner) -- (Robot);
 	\draw [inheritedFrom] (BumperSensor) -- (Sensor);
 	% \draw [inheritedFrom] (LidarSensor) -- (Sensor);
+	\draw [inheritedFrom] (RigidPointBall) -- (RigidPhysicalObject);
 
 \fi
 

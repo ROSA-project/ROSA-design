@@ -2,21 +2,41 @@
 
 \className{World}
 \\  \hline
-\data{objects: list[Object]}
-
+\data{objects: dict[ObjectId, Object]}
+\data{__vis_data : dict}
+\data{__creation_ts: float}
+\data{__num_evolutions: int}
+\data{__current_time_ms: int}
+\data{__vis_output_filename: str}
+\data{__duration_sec: int}
+\data{__vis_frame_interval_ms: float}
+\data{__next_frame_time_msec: float}
  \\ \hline 
-\method{constructor(map: Map) }
+\method{constructor(map: Map, vis_filename) }
 
 \method{evolve(delta-t)}
-
 \desc{calls evolve() of all objects which have no owner, takes care of offspring objects, and finally kills objects which ask for it}
 
 \method{run()}
+\desc{manages delta-t (how small it should be), manages intersections using intersect(), and calls evolve()}
 
-\desc{manages delta-t (how small it should be), manages intersections using self.intersect(), and calls self.evolve()}
-
-\method{intersect() -> intersection-result: list[InIn]}
-
+\method{intersect() -> tuple}
 \desc{instantiates InIn for each pair of objects and calls InIn.intersect() to evaluate the intersection}
+
+\method{add_object(new_objects: dict[ObjectId, Object]) -> None}
+
+\method{delete_expired_objects() -> None}
+
+\method{register_intersections(intersection_result: InInType) -> None}
+
+\method{pick_delta_t() -> float}
+
+\method{update_visualization_json()}
+
+\method{dump_all_shapes_info()}
+
+\method{dump_vis_data_to_file()}
+
+\method{visualize()}
 \end{tabular} 
 

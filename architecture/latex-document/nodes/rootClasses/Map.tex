@@ -1,6 +1,19 @@
 \begin{tabular}{p{\nodeTextWidthRatio\textwidth}} 
 \className{Map}
 \\  \hline
+\data{next_available_id}
  \\ \hline 
+
+ \method{parse_map(self, filename: str) -> dict[ObjectId, Object]}
+
+ \method{get_next_id(self) -> ObjectId}
+
+ \method{instantiate_object(obj_json, new_id: ObjectId, name: string, owner: Object) -> Object}
+
+\method{get_shape(obj_json) -> Shape}
+
+\method{get_position(obj_json) -> Shape}
+
+\method{get_objects(self, obj_map: dict[ObjectId, Object], parsed, owner: Object) -> dict[ObjectId, Object]}
 \end{tabular} 
 

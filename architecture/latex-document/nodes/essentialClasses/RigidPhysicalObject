@@ -3,6 +3,14 @@
 
 \desc{The most general form of it, supporting bumps}
 \\ \hline
+\data{acceleration: float}
+\data{velocity: float}
 \\ \hline
+\method{evolve(delta_t)}
+\desc{overridden to include bump}
+
+\method{new_position_upon_bump()}
+\desc{placeholder, to be overriden by children}
+
 \end{tabular} 
 

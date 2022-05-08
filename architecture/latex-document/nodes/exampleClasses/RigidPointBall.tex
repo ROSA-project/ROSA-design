@@ -4,8 +4,16 @@
 \desc{A ball with relevant calculations for reflection upon bump, but not rotating}
 
 \desc{v0: 2D cylinder instead of sphere.}
-\\ \hline
-\\ \hline
+\\\hline
+\\\hline
+\method{new_position_upon_bump()}
+\desc{overriden to calculate bump reflection thing}
+
+\method{calculate_circle_bounce(circle_center, phi, theta, bump_point)}
+
+\method{polar_to_cartesian(r, phi_degree, theta_degree)}
+
+\method{cartesian_to_polar(x, y, z)}
+
+\method{get_required_delta_t() -> float}
 \end{tabular} 
-    
-    
