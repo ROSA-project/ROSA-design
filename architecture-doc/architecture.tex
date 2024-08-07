@@ -1,0 +1,189 @@
+\documentclass[a4paper]{report}
+
+\usepackage{color}
+\usepackage{graphicx}
+
+\usepackage[cmex10]{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+
+\usepackage{float}
+\usepackage{tikz}
+\usepackage{epstopdf}
+\usepackage{hyperref}
+
+% to adjust the margins. you can give specific values otherwise it slightly decreases the margins
+\usepackage{geometry}
+
+\newcommand{\cm}[1]{{\color{red}#1}}
+\newcommand{\ai}[1]{{\color{blue}#1}}
+
+% BEGIN: Definition of rules environment
+\usepackage{xcolor}
+\usepackage{mdframed}
+\usepackage{enumitem}
+
+% Define a custom color for the background
+\definecolor{lightgray}{rgb}{0.9, 0.9, 0.9}
+
+% Define the new environment
+\newcounter{rulecounter}
+\newenvironment{rosarule}[2][]{%
+  \refstepcounter{rulecounter}%
+  \mdfsetup{
+    backgroundcolor=lightgray,
+    skipabove=10pt,
+    skipbelow=10pt,
+    innerleftmargin=10pt,
+    innerrightmargin=10pt,
+    innertopmargin=10pt,
+    innerbottommargin=10pt,
+    linewidth=0pt
+  }
+  \begin{mdframed}
+  \noindent\textbf{Rule \therulecounter: \textit{#2}} #1
+  \noindent
+}{
+  \end{mdframed}
+}
+% END
+
+% it tries to find all graphic files in this folder. Good for managing files.
+\graphicspath{ {figures/} }
+
+\title{Simulator Architecture}
+\date{Started July 28, 2024\\last update \today}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\chapter{World Evolution}
+
+The simulation is done by calculating and storing the state of the world at consecutive instances of time denoted by the sequence $t$:
+\begin{equation}
+	t = (t_k)_{k=0}^{n_t-1}
+\end{equation}
+where $n_t$ denotes the number of time instances such that 
+\begin{equation}
+	T = t_{n_t} + \Delta t_{n_t} - t_0
+\end{equation}
+is the total duration of the simulated world. The sequence $t$ is most likely not uniform in time. At each instance of time $t_i$, the time increment $\Delta t_i$ is calculated according to the  state of the world at $t_i$. Clearly,
+\begin{equation}
+	T = \sum_{i=0}^{n_t-1} \Delta t_i.
+\end{equation}
+
+The state of the world at $t_i$ is denoted as $s_i$. The initial state of the world $s_0$ is a given. Although the nature of the entity $s_i$ is irrelevant to the current discussion and is not mathematically defined here, it must satisfy the following rule.
+\begin{rosarule}{Reproducibility}
+\label{rule:reproducibility}
+Consider the sequence of states $s_0, s_1, \ldots, s_q$ corresponding to time instances $t_0, t_1, \ldots, t_q$. For any $m<q, m\in \mathbb{N}$, if the initial state is set to $s_m$, the exact sequence of states must be produced to reach $s_q$. That is, for a new simulation with states denoted as $s'_i$, we have $s'_0 = s_m$ and 
+\begin{equation}
+	(s'_k)_{k=0}^{m} = (s_k)_{k=m}^{q}.
+\end{equation}
+\end{rosarule}
+
+\section{Evolution cycles}
+Note that offspring objects and dead objects get handled in the same cycle. So the object gets the intersection information for the new ones in the same cycle.
+
+The \verb+World+ does the following loop
+\begin{enumerate}
+	\item Collect \verb+Object.get_delta_t()+ of all objects and take the minimum.
+	\item Call \verb+Object.evolve(delta_t)+ of all objects and collect the offspring objects and add them to the list.
+	\item delete the dead objects from the list.
+	\item Calculate intersections of every pair. Relevant instances of \verb+Intersection+ is given to every \verb+Object+ at this step TODO\footnote{\ai{in all cases you can pass the intersection object. But that object should not be kept in memory. Object must be careful in handling that. how to enforce?}}. From the \verb+World+'s point of view, there are two possible outcomes:
+	\begin{enumerate}
+		\item A Non-Infinitestimal Intersection (NII) has happened. The \verb+World+ handles this as follows. 
+		\begin{enumerate}
+			\item discard this cycle by calling \verb+Object.StateManager.deleteState(0)+ for every \verb+Object+. \cm{Does this provide enough flexibility for optimizations?}
+			\item rewind the simulation timer.
+		\end{enumerate}
+		\item No NII has happened. That is, there might be occurrences of infinitesimal intersections, i.e. collision, or no intersection among objects. The \verb+Object+ handles these cases. See Section~\ref{chap:intersection}. \cm{Even in the case of no intersection, the objects could still use a measure of distance to update their delta-t}
+	\end{enumerate}
+\end{enumerate}
+
+\section{Calculation of $\Delta t_i$}
+This is about \verb+Object.getDeltaT()+
+
+\begin{itemize}
+\item what inputs does it need from the world?
+\end{itemize}
+
+\chapter{Objects}
+\section{Object Types}
+In this categorization, we should avoid the physics viewpoint but rather the architectural viewpoint. 
+\begin{itemize}
+	\item Tangible objects: which cannot have NII. This objects are likely to be the ones responding to collision, having mass, etc.
+	\item Intangible objects: which can have NII. Examples are a beam created to measure distance and fields such as gravity.
+\end{itemize}
+
+Recall that detection of an NII in the evolution cycle of the \verb+World+ triggers a series of action if the object is tangible.
+
+\section{Parent and Children Objects}
+A number of objects (of any type) which do not evolve independently of each other. The dependence might be established via 
+\begin{itemize}
+	\item Natural interconnected-objects: laws of physics and the constraints as discussed in Section~\ref{}. 
+	\item Artificial inter-connected objects: exchange of information and an algorithm not necessarily following the laws of physics. 
+\end{itemize}
+
+An object which consists of a number of inter-connected objects is called ``Parent Object" and the constituting objects are called ``child(ren) object(s)". Here are the architectural considerations:
+\begin{itemize}
+	\item The children objects evolve only when called by the parent object. 
+	\item An \verb+Object+ can be a parent, a child or both. This implies that a child object can itself be the parent of a group of inter-connected objects and so on. There is no limitation on the depth of this hierarchy.
+	\item An object can have only one parent.
+	\item An \verb+Object+ interacts only with its immediate parent and children.
+	\item Being a child or parent object is captured in \verb+Object+. That is, upon construction of any \verb+Object+, it can be given a parent object. 
+	\item The \verb+World+ handles all objects equally in its evolution cycle.
+	\item A parent object of a group of natural inter-connected objects is an instance of \verb+NaturalParentObject+ which handles the interconnections based on the laws of physics by merely calling their \verb+Object.evolve()+. Constraints (connections, hinges, etc) are handled elsewhere. 
+\end{itemize}
+
+\chapter{Constraints}
+Constraints are instances of \verb+Constraint+ inherited from \verb+Object+. \ai{How does it work?}
+
+\chapter{State management}
+We need to be able to have the notion of state at two levels: an object's state and the state of the world. The state of the world at time $t$ is simply the collection of the states of all objects. Since we desire to leave room for optimization, it seems better not to mandate that all objects evolve at the same pace and have states recorded at the same set of time instances.
+
+Optimizations might not be compatible with the reproducibility rule (Rule \ref{rule:reproducibility}). Recall that the world evolves on a sequence of time instances with adaptively adjusted time step. Once a particular sequence is exercised, the particular time instances become the basis for Rule~\ref{rule:reproducibility}. One evident example of such incompatibility is when the initial state $s_n$ of the world at time $t_n$ does not exist in states sequence of a particular object $o_i$ employing optimizations. The mentioned object has to assume a state obtained from linear interpolation. For the sake of simplicity assume that $s_{n+1}$ at $t_{n+1}$ does exist in the states sequence of $o_i$. Then it is not clear that the evolution of $o_i$ from $s_n$ to $s_{n+1}$ is the same as evolution from $s_{n-1}$ to $s_{n+1}$. 
+
+\section{proposal 1}
+Each \verb+Object+ has its \verb+StateManager+. When calling its \verb+evolve()+, a new state is added. If required, the last state can be deleted. 
+
+\begin{itemize}
+	\item \verb+State& StateManager.newState()+ The owning object should call this in its \verb+evolve()+. Whether it is later discarded or multiple of states are discarded is not a concern in \verb+StateManager+.
+	\item \verb+void StateManager.deleteState(int stateCountFromEnd)+ where the parameter is a non-positive value with 0 referring to the last state, -1 referring to the one before last and so on.
+\item \verb+State& StateManager.getState(double t)+ returns the state at time instance \verb+t+. If not available in the simulated states, it is linearly interpolated between the immediately preceding and proceeding states.
+\end{itemize}
+
+\section{proposal 2}
+There is a central \verb+StateManager+? \cm{Saeed: just crossed my mind but I don't see much value in it. I'm keeping it, just in case.}
+
+
+\chapter{Intersection}
+\label{chap:intersection}
+Each pair of \verb+Object+s get an \verb+Intersection+ object which handles their intersection.  This implies is $\binom{N}{2}=\frac{n(n-1)}{2}$ instances which has the quadratic (polynomial) $\mathcal{O}(N^2)$ order. That is, no problem with the order in the non-optimized way.
+
+These objects can be constructed for every new pair and kept in memory not to add a significant runtime overhead of constructing and destructing objects. Either by such optimizations or not, the \verb+vector+ of \verb+Intersection+ instances is managed in \verb+World.handleIntersectionPairs()+ and stored in \verb+intersectionPairs+. In the evolution cycle, all elements of the vector are looped over. 
+
+The idea is that the intersection instance provides all the necessary information to the objects pair. Here is the interface:
+\begin{itemize}
+	\item \verb+Intersection.process(int &status)+ which does the calculations and update the internal variables. The immediate return value is the status which could be 
+	\begin{itemize}
+		\item \verb+NON_INFINITESIMAL_INTERSECTION+,
+		\item \verb+COLLISION_POINTS+, 
+		\item \verb+COLLISION_SURFACES+, 
+		\item \verb+NO_INTERSECTION+.
+	\end{itemize}
+	This function is meant to be called by \verb+World+.
+	\item \verb+Intersection.getContactPoints(std::vector<Point> contactPoints)+: A collision might cause several contact points depending on the geometries. \cm{For regular convex shapes, this will not happen so no need to worry now.} This function is meant to be called by the objects. The \verb+World+ handles the situation only when an NII happens.
+	\item \verb+Intersection.getContactSurfaces(std::vector<Surface> contactSurfaces)+ A collision might cause a surface contact. Although for ideally rigid objects this is a possible but zero-probably event, in our simulation we might have to have the option. \cm{not now anyway.} Similar to \verb+getContactPoints+, this function is meant to be called by the objects. The \verb+World+ handles the situation only when an NII happens.
+	\item \verb+Intersection.getDistance(double& distance)+: when no intersection has happened, provides a measure. \cm{what measure?!}
+\end{itemize}
+
+The threshold and the metric for determining an NII is the job of \verb+Intersection+
+
+
+\bibliographystyle{plain}
+\bibliography{biblio}
+
+\end{document}
