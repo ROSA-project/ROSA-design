@@ -80,9 +80,10 @@ The state of the world at $t_i$ is denoted as $s_i$. The initial state of the wo
 \label{rule:reproducibility}
 Consider the sequence of states $s_0, s_1, \ldots, s_q$ corresponding to time instances $t_0, t_1, \ldots, t_q$. For any $m<q, m\in \mathbb{N}$, if the initial state is set to $s_m$, the exact sequence of states must be produced to reach $s_q$. That is, for a new simulation with states denoted as $s'_i$, we have $s'_0 = s_m$ and 
 \begin{equation}
-	(s'_k)_{k=0}^{m} = (s_k)_{k=m}^{q}.
+	(s'_k)_{k=0}^{q-m} = (s_k)_{k=m}^{q}.
 \end{equation}
 \end{rosarule}
+
 
 \section{Evolution cycles}
 Note that offspring objects and dead objects get handled in the same cycle. So the object gets the intersection information for the new ones in the same cycle.
@@ -91,7 +92,9 @@ The \verb+World+ does the following loop
 \begin{enumerate}
 	\item Collect \verb+Object.get_delta_t()+ of all objects and take the minimum.
 	\item Call \verb+Object.evolve(delta_t)+ of all objects and collect the offspring objects and add them to the list.
+	\cm{How an object knows it's time for the offspring? (if it needs any data from the world, That should be calculated first.)}
 	\item delete the dead objects from the list.
+	\cm{How dead objects know that it's time to be dead?}
 	\item Calculate intersections of every pair. Relevant instances of \verb+Intersection+ is given to every \verb+Object+ at this step TODO\footnote{\ai{in all cases you can pass the intersection object. But that object should not be kept in memory. Object must be careful in handling that. how to enforce?}}. From the \verb+World+'s point of view, there are two possible outcomes:
 	\begin{enumerate}
 		\item A Non-Infinitestimal Intersection (NII) has happened. The \verb+World+ handles this as follows. 
@@ -99,7 +102,11 @@ The \verb+World+ does the following loop
 			\item discard this cycle by calling \verb+Object.StateManager.deleteState(0)+ for every \verb+Object+. \cm{Does this provide enough flexibility for optimizations?}
 			\item rewind the simulation timer.
 		\end{enumerate}
-		\item No NII has happened. That is, there might be occurrences of infinitesimal intersections, i.e. collision, or no intersection among objects. The \verb+Object+ handles these cases. See Section~\ref{chap:intersection}. \cm{Even in the case of no intersection, the objects could still use a measure of distance to update their delta-t}
+		\item No NII has happened. That is, there might be occurrences of infinitesimal intersections, i.e. collision, or no intersection among objects. The \verb+Object+ handles these cases. See Section~\ref{chap:intersection}. \cm{Even in the case of no intersection, the objects could still use a measure of distance to update their delta-t.}\\
+		\cm{In this step, There is a chance that we discard the whole cycle, Deleting dead objects before this step is not very logical, Because the fact that they are dead depends on some conditions, e.g. intersection. }\\
+		
+		
+		\cm{Why there is no step for collision detection?}
 	\end{enumerate}
 \end{enumerate}
 
