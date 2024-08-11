@@ -125,6 +125,7 @@ A number of objects (of any type) which do not evolve independently of each othe
 
 
 \item Non-active system of objects \\
+\ai{Discuss the order of evolution}\\
 Is a system which obeys physics laws in order to evolve.
 this system is treated as one-unit Because components of it are connected by mathematical constraints\\
 \cm{each component of the system interacts with the world, each interaction is important and effects the way system evolves. 2 Questions arises: \\ 
@@ -176,6 +177,8 @@ Constraints can be defined and used in 2 ways:
 \begin{itemize}
 	\item Mathematical constraints: \\
 	From an architectural point of view \verb+StateManager.constraints()+ works fine when we are to update the dynamical behavior of objects.
+	
+	\cm{or maybe it should be handled by parent object if it's going to be applied to the Non-active objects} 
 	\begin{itemize}
 		\item 	This type is used to confine the degrees of 				freedom (DOF) of an object to limit the way it 						interacts with the world.
 		\item This type can be used to model some complex 					objects such as ropes or maybe strings.
