@@ -17,6 +17,7 @@
 
 \newcommand{\cm}[1]{{\color{red}#1}}
 \newcommand{\ai}[1]{{\color{blue}#1}}
+\newcommand{\eg}[1]{{\color{violet}#1}}
 
 % BEGIN: Definition of rules environment
 \usepackage{xcolor}
@@ -102,10 +103,7 @@ The \verb+World+ does the following loop
 			\item rewind the simulation timer.
 		\end{enumerate}
 		\item No NII has happened. That is, there might be occurrences of infinitesimal intersections, i.e. collision, or no intersection among objects. The \verb+Object+ handles these cases. See Section~\ref{chap:intersection}. \cm{Even in the case of no intersection, the objects could still use a measure of distance to update their delta-t.}\\
-		\cm{In this step, There is a chance that we discard the whole cycle, Deleting dead objects before this step is not very logical, Because the fact that they are dead depends on some conditions, e.g. intersection. }\\
-		
-		
-		\cm{Why there is no step for collision detection?}
+		\cm{In this step, There is a chance that we discard the whole cycle, Deleting dead objects before this step is not very logical, Because the fact that they are dead depends on some conditions, e.g. intersection. }
 	\end{enumerate}
 \end{enumerate}
 
@@ -117,38 +115,102 @@ This is about \verb+Object.getDeltaT()+
 \end{itemize}
 
 \chapter{Objects}
-\section{Object Types}
-In this categorization, we should avoid the physics viewpoint but rather the architectural viewpoint. 
-\begin{itemize}
-	\item Tangible objects: which cannot have NII. This objects are likely to be the ones responding to collision, having mass, etc.
-	\item Intangible objects: which can have NII. Examples are a beam created to measure distance and fields such as gravity.
-\end{itemize}
+Objects are building blocks of our simulation world. everything which exists in the simulation is treated as an object. we have an \verb+Object+ class defined in our structure. \\
+Each object has a \verb+State(t)+ which is a function of time, and determines the \verb+Behavior(t)+ and \verb+Properties(t)+ of the object. \\
 
-Recall that detection of an NII in the evolution cycle of the \verb+World+ triggers a series of action if the object is tangible.
-
-\section{Parent and Children Objects}
+\section{Parent and Child Object Management Architecture}
+Objects are either independent or dependent on each other
 A number of objects (of any type) which do not evolve independently of each other. The dependence might be established via 
 \begin{itemize}
-	\item Natural interconnected-objects: laws of physics and the constraints as discussed in Section~\ref{}. 
-	\item Artificial inter-connected objects: exchange of information and an algorithm not necessarily following the laws of physics. 
+
+
+\item Non-active system of objects \\
+Is a system which obeys physics laws in order to evolve.
+this system is treated as one-unit Because components of it are connected by mathematical constraints\\
+\cm{each component of the system interacts with the world, each interaction is important and effects the way system evolves. 2 Questions arises: \\ 
+1. Should this framework be applied here ?\\
+2. If yes, How to determine the parent object?
+}\\
+\eg{Rope : is made by multiple-rods constrained to each other. }
+
+\item Active system of objects\\
+Is a system which has the ability to control its own behavior regardless of the laws of physics governing the world.\\
+\eg{Robot : has actuators}
+	\begin{itemize}
+	\item Offspring Objects:\\
+Are child objects that are born in order to help their parent perceive the state of the world and react to it.\\
+They are temporary objects and will die once they finished their duty.\\
+
+	\end{itemize}
+
+%	\item Natural interconnected-objects: laws of physics and the constraints as discussed in Section~\ref{}. 
+%	\item Artificial inter-connected objects: exchange of information and an algorithm not necessarily following the laws of physics. 
+
 \end{itemize}
 
 An object which consists of a number of inter-connected objects is called ``Parent Object" and the constituting objects are called ``child(ren) object(s)". Here are the architectural considerations:
 \begin{itemize}
+	\item \ai{How to choose the parent object?}
 	\item The children objects evolve only when called by the parent object. 
 	\item An \verb+Object+ can be a parent, a child or both. This implies that a child object can itself be the parent of a group of inter-connected objects and so on. There is no limitation on the depth of this hierarchy.
 	\item An object can have only one parent.
 	\item An \verb+Object+ interacts only with its immediate parent and children.
 	\item Being a child or parent object is captured in \verb+Object+. That is, upon construction of any \verb+Object+, it can be given a parent object. 
-	\item The \verb+World+ handles all objects equally in its evolution cycle.
-	\item A parent object of a group of natural inter-connected objects is an instance of \verb+NaturalParentObject+ which handles the interconnections based on the laws of physics by merely calling their \verb+Object.evolve()+. Constraints (connections, hinges, etc) are handled elsewhere. 
+	\item The \verb+World+ handles all objects equally in its evolution cycle.\\
+	\cm{ A parent object of a group of natural inter-connected objects is an instance of} \verb+NaturalParentObject+ \cm{ which handles the interconnections based on the laws of physics by merely calling their}  \verb+Object.evolve()+. \cm{ Constraints (connections, hinges, etc) are handled elsewhere. }\\
+	\ai{this is not compatible with our definition of Non-active objects}
 \end{itemize}
 
+\section{Object Types}
+In this categorization, we should avoid the physics viewpoint but rather the architectural viewpoint. \verb+Intersection+ mechanism heavily depends on this to work.
+\begin{itemize}
+	\item Tangible objects: which cannot have NII. This objects are likely to be the ones responding to collision, having mass, etc.
+
+	\item Intangible objects: which can have NII. Examples are a beam created to measure distance and fields such as gravity.
+\end{itemize}
+
+Recall that detection of an NII in the evolution cycle of the \verb+World+ triggers a series of action if the object is tangible.
+
 \chapter{Constraints}
-Constraints are instances of \verb+Constraint+ inherited from \verb+Object+. \ai{How does it work?}
+Constraints can be defined and used in 2 ways:
+\begin{itemize}
+	\item Mathematical constraints: \\
+	From an architectural point of view \verb+StateManager.constraints()+ works fine when we are to update the dynamical behavior of objects.
+	\begin{itemize}
+		\item 	This type is used to confine the degrees of 				freedom (DOF) of an object to limit the way it 						interacts with the world.
+		\item This type can be used to model some complex 					objects such as ropes or maybe strings.
+	\end{itemize}
+	\eg{Ex) Relative distance must be constant between 2 objects : is simply setting a mathematical equation between space coordinates of them.}\\
+	\eg{Ex) We have an obstacle which is only allowed to move in y-direction no matter what.}
+	\item Mechanical constraints :\\
+	
+	This type may have visual representation and is used to simulate the behavior of mechanical connections, e.g. hinge, To make inter-connected bodies.\\
+	\cm{Mechanical Constraints are instances of} \verb+Constraint+ \cm{inherited from} \verb+Object+ . \\
+%\ai{How does it work?}
+	
+\end{itemize}
+
+
+
+%Definition of constraint : \\
+%Is a mathematical obligation which constraints the movement of an object. so the object will have less degrees of freedom and its motion gets limited.
+
+%\cm{Constraints are instances of} \verb+Constraint+ \cm{inherited from} \verb+Object+ . \\
+%\ai{How does it work?} 
+%I think when state of an object is being updated from a 
+%\section{Proposal 1}
+
+
 
 \chapter{State management}
-We need to be able to have the notion of state at two levels: an object's state and the state of the world. The state of the world at time $t$ is simply the collection of the states of all objects. Since we desire to leave room for optimization, it seems better not to mandate that all objects evolve at the same pace and have states recorded at the same set of time instances.
+State(t) is a function of time which gives us information about the world and objects inside it,
+We need to be able to have the notion of state at two levels:
+\begin{itemize}
+	\item World state:\\
+	The state of the world at time $t$ is simply the collection of the states of all objects.
+	\item Object state
+\end{itemize}
+  Since we desire to leave room for optimization, it seems better not to mandate that all objects evolve at the same pace and have states recorded at the same set of time instances.
 
 Optimizations might not be compatible with the reproducibility rule (Rule \ref{rule:reproducibility}). Recall that the world evolves on a sequence of time instances with adaptively adjusted time step. Once a particular sequence is exercised, the particular time instances become the basis for Rule~\ref{rule:reproducibility}. One evident example of such incompatibility is when the initial state $s_n$ of the world at time $t_n$ does not exist in states sequence of a particular object $o_i$ employing optimizations. The mentioned object has to assume a state obtained from linear interpolation. For the sake of simplicity assume that $s_{n+1}$ at $t_{n+1}$ does exist in the states sequence of $o_i$. Then it is not clear that the evolution of $o_i$ from $s_n$ to $s_{n+1}$ is the same as evolution from $s_{n-1}$ to $s_{n+1}$. 
 
@@ -176,6 +238,7 @@ The idea is that the intersection instance provides all the necessary informatio
 	\item \verb+Intersection.process(int &status)+ which does the calculations and update the internal variables. The immediate return value is the status which could be 
 	\begin{itemize}
 		\item \verb+NON_INFINITESIMAL_INTERSECTION+,
+		\item \verb+INFINITESIMAL_INTERSECTION+,
 		\item \verb+COLLISION_POINTS+, 
 		\item \verb+COLLISION_SURFACES+, 
 		\item \verb+NO_INTERSECTION+.
@@ -186,9 +249,22 @@ The idea is that the intersection instance provides all the necessary informatio
 	\item \verb+Intersection.getDistance(double& distance)+: when no intersection has happened, provides a measure. \cm{what measure?!}
 \end{itemize}
 
-The threshold and the metric for determining an NII is the job of \verb+Intersection+
+The threshold and the metric for determining an NII is the job of \verb+Intersection+ 
 
+\chapter{Force Management}
+\label{chap:Force Management}
+\section{proposal 1}
+Force can be defined as a piece of information obtained from the following functions: 
+\begin{itemize}
+	\item \verb+Intersection.II.Intangible+
+	\item \verb+Intersection.NII.Tangible+ \\
+	 \cm{If force fields are modeled as Tangible objects}
+\end{itemize}
+Basically the number indicating the amount of intersection can be a measure to calculate the force that should be exerted on each object.By using \verb+Intersection.getContactPoints(std::vector<Point> contactPoints)+ we can define the effect that the force has on each object.
 
+\subsection{Architectural Point Of View}
+Since the \verb+Force+ may depend on different \verb+Properties(t)+ of the object at a given \verb+State(t)+,
+Such as $I(t)$ inertia tensor or $M$ mass. it's better to be  \verb+Double Object.ForceAndMoment(Intersection needed data)+ with a returning value of $ \Sigma F $ and $ \Sigma M $ .
 \bibliographystyle{plain}
 \bibliography{biblio}
 
