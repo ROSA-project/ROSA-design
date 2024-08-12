@@ -1,0 +1,8 @@
+*.out
+*.toc
+*.log
+*.aux
+*.synctex.gz
+
+# macos stuff
+.DS_Store
