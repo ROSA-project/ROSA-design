@@ -224,9 +224,11 @@ We need to be able to have the notion of state at two levels:
 \end{itemize}
   Since we desire to leave room for optimization, it seems better not to mandate that all objects evolve at the same pace and have states recorded at the same set of time instances.
 
+\ai{Saeed. Process this: the state of an object at time $t_0$ must contain all the information that the objects needs to evolve from $t_0$ to $t+\Delta t$ such that we can construct the object again and initialize it to its recorded state at $t_0$ and expect an identical behavior. This is a direct consequence of Rule~\ref{rule:reproducibility}. But then the state of the C++ object, i.e. its member data, is what we need and could simply keep that as state! That is, a copy of the object itself. BUT could it be that we have unnecessary member data? If this is not a problem, then I suppose we could have a central state manager which keeps a copy of the object at every state!}
+
 Optimizations might not be compatible with the reproducibility rule (Rule \ref{rule:reproducibility}). Recall that the world evolves on a sequence of time instances with adaptively adjusted time step. Once a particular sequence is exercised, the particular time instances become the basis for Rule~\ref{rule:reproducibility}. One evident example of such incompatibility is when the initial state $s_n$ of the world at time $t_n$ does not exist in states sequence of a particular object $o_i$ employing optimizations. The mentioned object has to assume a state obtained from linear interpolation. For the sake of simplicity assume that $s_{n+1}$ at $t_{n+1}$ does exist in the states sequence of $o_i$. Then it is not clear that the evolution of $o_i$ from $s_n$ to $s_{n+1}$ is the same as evolution from $s_{n-1}$ to $s_{n+1}$. 
 
-\section{proposal 1}
+\section{API}
 Each \verb+Object+ has its \verb+StateManager+. When calling its \verb+evolve()+, a new state is added. If required, the last state can be deleted. 
 
 \begin{itemize}
@@ -234,10 +236,6 @@ Each \verb+Object+ has its \verb+StateManager+. When calling its \verb+evolve()+
 	\item \verb+void StateManager.deleteState(int stateCountFromEnd)+ where the parameter is a non-positive value with 0 referring to the last state, -1 referring to the one before last and so on.
 \item \verb+State& StateManager.getState(double t)+ returns the state at time instance \verb+t+. If not available in the simulated states, it is linearly interpolated between the immediately preceding and proceeding states.
 \end{itemize}
-
-\section{proposal 2}
-There is a central \verb+StateManager+? \cm{Saeed: just crossed my mind but I don't see much value in it. I'm keeping it, just in case.}
-
 
 \chapter{Intersection}
 \label{chap:intersection}
